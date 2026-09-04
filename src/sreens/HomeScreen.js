@@ -3,16 +3,16 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import Header from '../components/Header';
 import ExerciceCard from '../components/ExerciceCard';
 
-export default function HomeScreen({ workouts, onDelete, onOpenForm }) {
+export default function HomeScreen({ workouts, onDelete, onEdit, onOpenForm }) {
   return (
     <View style={styles.container}>
-      <Header title="Meus Treinos" subtitle="FitTrack • Seu painel geral" />
+      <Header title="Meus Treinos" subtitle="FitTrack • Gestão & Persistência" />
 
       {workouts.length === 0 ? (
         <View style={styles.emptyBox}>
           <Text style={styles.emptyTitle}>Nenhum treino registrado ainda</Text>
           <Text style={styles.emptySub}>
-            Sua jornada começa agora! Toque no botão abaixo para adicionar.
+            Sua jornada começa agora! Toque no botão abaixo para adicionar sua primeira sessão.
           </Text>
         </View>
       ) : (
@@ -20,7 +20,7 @@ export default function HomeScreen({ workouts, onDelete, onOpenForm }) {
           data={workouts}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <ExerciceCard workout={item} onDelete={onDelete} />
+            <ExerciceCard workout={item} onDelete={onDelete} onEdit={onEdit} />
           )}
           contentContainerStyle={styles.list}
         />

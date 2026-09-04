@@ -4,11 +4,14 @@ import HomeScreen from './src/sreens/HomeScreen';
 import FormSreen from './src/sreens/FormSreen';
 import AnalysesScreen from './src/sreens/AnalysesScreen';
 import ProfileScreen from './src/sreens/ProfileScreen';
+import WorkoutDetailsScreen from './src/sreens/WorkoutDetailsScreen';
 import { getWorkouts, saveWorkout, deleteWorkout } from './src/services/storageService';
 
 export default function App() {
   const [tab, setTab] = useState('home');
   const [workouts, setWorkouts] = useState([]);
+  const [workoutToEdit, setWorkoutToEdit] = useState(null);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -19,15 +22,30 @@ export default function App() {
     setWorkouts(data);
   };
 
-  const handleSave = async (newWorkout) => {
-    const updated = await saveWorkout(newWorkout);
+  const handleSave = async (workoutData) => {
+    const updated = await saveWorkout(workoutData);
     setWorkouts(updated);
+    setWorkoutToEdit(null);
     setTab('home');
   };
 
   const handleDelete = async (id) => {
     const updated = await deleteWorkout(id);
     setWorkouts(updated);
+    if (selectedWorkout && selectedWorkout.id === id) {
+      setSelectedWorkout(null);
+      setTab('home');
+    }
+  };
+
+  const handleOpenEdit = (workout) => {
+    setWorkoutToEdit(workout);
+    setTab('form');
+  };
+
+  const handleSelectWorkout = (workout) => {
+    setSelectedWorkout(workout);
+    setTab('details');
   };
 
   return (
@@ -39,20 +57,40 @@ export default function App() {
           <HomeScreen
             workouts={workouts}
             onDelete={handleDelete}
-            onOpenForm={() => setTab('form')}
+            onEdit={handleOpenEdit}
+            onSelectWorkout={handleSelectWorkout}
+            onOpenForm={() => {
+              setWorkoutToEdit(null);
+              setTab('form');
+            }}
+          />
+        )}
+        {tab === 'details' && (
+          <WorkoutDetailsScreen
+            workout={selectedWorkout}
+            onBack={() => setTab('home')}
+            onEdit={(w) => {
+              setWorkoutToEdit(w);
+              setTab('form');
+            }}
+            onDelete={handleDelete}
           />
         )}
         {tab === 'form' && (
           <FormSreen
+            workoutToEdit={workoutToEdit}
             onSave={handleSave}
-            onCancel={() => setTab('home')}
+            onCancel={() => {
+              setWorkoutToEdit(null);
+              setTab('home');
+            }}
           />
         )}
         {tab === 'analyses' && <AnalysesScreen />}
         {tab === 'profile' && <ProfileScreen />}
       </View>
 
-      {tab !== 'form' && (
+      {tab !== 'form' && tab !== 'details' && (
         <View style={styles.bottomBar}>
           <TouchableOpacity onPress={() => setTab('home')} style={styles.tabItem}>
             <Text style={[styles.tabText, tab === 'home' && styles.activeTab]}>Treinos</Text>
