@@ -1,12 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import Header from '../components/Header';
 import ExerciceCard from '../components/ExerciceCard';
+import { getProfile } from '../services/storageService';
 
-export default function HomeScreen({ workouts, onDelete, onEdit, onOpenForm }) {
+export default function HomeScreen({ workouts, onDelete, onEdit, onOpenForm, navigation }) {
+  const [userName, setUserName] = useState('');
+
+  // Busca o nome do usuário ao carregar e sempre que a tela receber foco
+  useEffect(() => {
+    loadUserProfile();
+
+    if (navigation?.addListener) {
+      const unsubscribe = navigation.addListener('focus', loadUserProfile);
+      return unsubscribe;
+    }
+  }, [navigation]);
+
+  const loadUserProfile = async () => {
+    try {
+      const profile = await getProfile();
+      if (profile && profile.name) {
+        setUserName(profile.name);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar nome do perfil:', error);
+    }
+  };
+
+  // Função para navegar até a tela de perfil
+  const handleGoToProfile = () => {
+    if (navigation?.navigate) {
+      navigation.navigate('ProfileScreen'); // Ajuste o nome exato da sua rota se for diferente
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Header title="Meus Treinos" subtitle="FitTrack • Gestão & Persistência" />
+      <Header 
+        title={userName ? `Olá, ${userName}` : 'Meus Treinos'} 
+        subtitle="FitTrack • Gestão & Persistência" 
+        onSettingsPress={handleGoToProfile}
+      />
 
       {workouts.length === 0 ? (
         <View style={styles.emptyBox}>
